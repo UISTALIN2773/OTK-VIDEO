@@ -18,11 +18,7 @@ import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 import * as Clipboard from 'expo-clipboard';
 
-// IP local o IP del servidor desplegado (ej. Render/VPS)
-const DEFAULT_API_URL = 'http://192.168.1.50:3000'; // Puedes cambiar esta IP por la IP local de tu PC o tu servidor
-
 export default function App() {
-  const [apiUrl, setApiUrl] = useState(DEFAULT_API_URL);
   const [inputUrl, setInputUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [videoInfo, setVideoInfo] = useState(null);
@@ -42,7 +38,7 @@ export default function App() {
     }
   };
 
-  // Buscar información del video
+  // Buscar información del video vía API pública
   const handleFetchInfo = async () => {
     if (!inputUrl.trim()) {
       Alert.alert('URL requerida', 'Por favor ingresa o pega la URL de un video');
@@ -54,23 +50,49 @@ export default function App() {
     setSelectedFormat(null);
 
     try {
-      const response = await fetch(`${apiUrl}/api/info`, {
+      // API pública y gratuita para extraer videos sin necesidad de backend local
+      const response = await fetch('https://api.cobalt.tools/api/json', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: inputUrl.trim() }),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: inputUrl.trim(),
+          vQuality: '1080'
+        }),
       });
 
       const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Error procesando el enlace');
+      
+      if (data.status === 'error') {
+        throw new Error(data.text || 'Error al procesar el enlace.');
       }
 
-      setVideoInfo(data);
-      if (data.formats && data.formats.length > 0) {
-        setSelectedFormat(data.formats[0]);
+      const directUrl = data.url;
+      if (!directUrl) {
+         throw new Error('No se pudo obtener el enlace de descarga directo.');
       }
+
+      const adaptedInfo = {
+        title: 'Video Listo para Descargar',
+        thumbnail: null,
+        uploader: 'Servicio en la nube',
+        best_direct_url: directUrl,
+        formats: [
+          {
+            format_id: 'default',
+            resolution: 'Mejor Calidad Disponible',
+            ext: 'mp4',
+            url: directUrl
+          }
+        ]
+      };
+
+      setVideoInfo(adaptedInfo);
+      setSelectedFormat(adaptedInfo.formats[0]);
     } catch (err) {
-      Alert.alert('Error', err.message || 'No se pudo conectar con el servidor API');
+      Alert.alert('Error', err.message || 'El servicio no pudo procesar esta URL en este momento.');
     } finally {
       setLoading(false);
     }
@@ -233,16 +255,7 @@ export default function App() {
           </View>
         )}
 
-        {/* Config / Server IP Input */}
-        <View style={styles.configCard}>
-          <Text style={styles.configTitle}>⚙️ Configuración de Servidor API</Text>
-          <TextInput
-            style={styles.configInput}
-            value={apiUrl}
-            onChangeText={setApiUrl}
-            placeholder="http://192.168.x.x:3000 o https://tu-backend.render.com"
-          />
-        </View>
+
 
       </ScrollView>
     </SafeAreaView>
