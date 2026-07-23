@@ -34,6 +34,14 @@
           "savePhotosPermission": "Permite guardar videos descargados en la galería.",
           "isAccessMediaLocationEnabled": true
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
       ]
     ],
     "web": {

@@ -11,6 +11,9 @@ importers:
       expo:
         specifier: ~57.0.7
         version: 57.0.7(@babel/core@7.29.7)(@expo/dom-webview@57.0.1)(react-native@0.86.0(@babel/core@7.29.7)(react@19.2.3))(react@19.2.3)
+      expo-build-properties:
+        specifier: ^57.0.6
+        version: 57.0.6(expo@57.0.7)
       expo-clipboard:
         specifier: ~57.0.1
         version: 57.0.1(expo@57.0.7)(react-native@0.86.0(@babel/core@7.29.7)(react@19.2.3))(react@19.2.3)
@@ -1012,6 +1015,11 @@ packages:
       expo: '*'
       react: '*'
       react-native: '*'
+
+  expo-build-properties@57.0.6:
+    resolution: {integrity: sha512-/iEpjjBgOc8twOqtaDdVcerBRbZGyOFhhpsBch2IfxNFazbrOIIPXc97s732Fia8HiNkhwaHk3GkBB7zi4WZ3g==}
+    peerDependencies:
+      expo: '*'
 
   expo-clipboard@57.0.1:
     resolution: {integrity: sha512-HWICri4+1ao7S6QEfcorxVumXDiDnx1guGGewjZgGJWLGxFYs0RgH8ujBs+lkTzBkMmlwADaWSlaesR+nDJt5Q==}
@@ -3329,6 +3337,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
       - typescript
+
+  expo-build-properties@57.0.6(expo@57.0.7):
+    dependencies:
+      '@expo/schema-utils': 57.0.2
+      expo: 57.0.7(@babel/core@7.29.7)(@expo/dom-webview@57.0.1)(react-native@0.86.0(@babel/core@7.29.7)(react@19.2.3))(react@19.2.3)
+      resolve-from: 5.0.0
+      semver: 7.8.5
 
   expo-clipboard@57.0.1(expo@57.0.7)(react-native@0.86.0(@babel/core@7.29.7)(react@19.2.3))(react@19.2.3):
     dependencies:
