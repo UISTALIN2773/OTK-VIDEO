@@ -38,6 +38,15 @@ export default function App() {
     }
   };
 
+  // Instancias comunitarias públicas de Cobalt para evitar bloqueos
+  const COBALT_INSTANCES = [
+    'https://cobalt-api.kwiatekq.dev/api/json',
+    'https://cobalt.mindsolo.net/api/json',
+    'https://api.cobalt.best/api/json',
+    'https://cobalt.qewertyy.dev/api/json',
+    'https://co.wuk.sh/api/json'
+  ];
+
   // Buscar información del video vía API pública
   const handleFetchInfo = async () => {
     if (!inputUrl.trim()) {
@@ -50,34 +59,46 @@ export default function App() {
     setSelectedFormat(null);
 
     try {
-      // API pública y gratuita para extraer videos sin necesidad de backend local
-      const response = await fetch('https://api.cobalt.tools/api/json', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          url: inputUrl.trim(),
-          vQuality: '1080'
-        }),
-      });
+      let data = null;
+      let success = false;
 
-      const data = await response.json();
+      // Intentar descargar usando múltiples servidores de respaldo transparentemente
+      for (const instanceUrl of COBALT_INSTANCES) {
+        try {
+          const response = await fetch(instanceUrl, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              url: inputUrl.trim(),
+              vQuality: '1080'
+            }),
+          });
+
+          const result = await response.json();
+          
+          if (result && result.status !== 'error' && result.url) {
+            data = result;
+            success = true;
+            break; // Si funciona, salimos del ciclo y usamos este servidor
+          }
+        } catch (e) {
+          // Si falla (ej. servidor caído o bloqueado), ignoramos y probamos el siguiente
+          console.log(`Fallo en instancia ${instanceUrl}:`, e.message);
+        }
+      }
       
-      if (data.status === 'error') {
-        throw new Error(data.text || 'Error al procesar el enlace.');
+      if (!success || !data) {
+        throw new Error('Todos los servidores públicos están saturados. Intenta de nuevo en unos minutos.');
       }
 
       const directUrl = data.url;
-      if (!directUrl) {
-         throw new Error('No se pudo obtener el enlace de descarga directo.');
-      }
-
       const adaptedInfo = {
         title: 'Video Listo para Descargar',
         thumbnail: null,
-        uploader: 'Servicio en la nube',
+        uploader: 'Servidor Comunitario',
         best_direct_url: directUrl,
         formats: [
           {
@@ -92,7 +113,7 @@ export default function App() {
       setVideoInfo(adaptedInfo);
       setSelectedFormat(adaptedInfo.formats[0]);
     } catch (err) {
-      Alert.alert('Error', err.message || 'El servicio no pudo procesar esta URL en este momento.');
+      Alert.alert('Servidores Saturados', err.message);
     } finally {
       setLoading(false);
     }
